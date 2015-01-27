@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>WSO2 DOD</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" href="css/jquery.mobile-1.4.5.min.css" />
+        <link href="css/jquery.mobile.icons.min.css" rel="stylesheet" />
+        <link href="css/jquery.mobile.structure-1.4.5.min.css" rel="stylesheet" />
+        <link href="css/themes/dod.css" rel="stylesheet" />
+        <link href="css/app.css" rel="stylesheet" />
+    <script src="js/jquery.min.js"></script>
+    <script src="js/jquery.mobile-1.4.5.min.js"></script>
+    <script src="js/jquery.url.js"></script>
+    <script type="text/javascript">
+       $("#newPageId").on("pageshow", onPageShow);
+
+        function onPageShow(e,data)
+        {
+            var url = $.url(document.location);
+
+            var param1 = url.param("param1");
+            alert(param1);
+        }
+
+    </script>>
+</head>
+
+<body>
+
+<div data-role="page" id="confirmOrder">
+        <div data-role="header" data-theme="c" data-position="fixed">
+
+            <h1 >WSO2 Dinner On Demand</h1>
+        </div><!-- /header -->
+        <div role="main" class="ui-content">
+        <label id="orderBatchdisplay" for="orderBatchdisplay">Joe, Your Order will be placed with the <b>6.30 p.m </b> batch of Orders</label>
+        </br>
+
+        <div id="orderTableContainer" class="center-wrapper">
+        <table cellspacing="0" id="orderTable" class="table-stroke ui-responsive ui-shadow ">
+              
+            <thead>
+                <tr>
+                    <th class="left" style="width:70%">Item</th>                  
+                    <th class="center" style="width:30%">Qty</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td class="left">Roast Chicken Fried Rice</td>                  
+                    <td class="center">1</td>
+                </tr>
+                <tr>
+                    <td class="left">Fish Fried Rice</td>                  
+                    <td class="center">4</td>
+                </tr>
+                <tr>
+                    <td class="left">Tuna Submarine</td>                    
+                    <td class="center">2</td>
+                </tr>
+            </tbody>
+        </table>
+        </div>
+        </br>
+
+        <div data-role="fieldcontain">
+            <label style="float:left; margin-right:20px; margin-top:4px;"for="select-team" class="select">Team</label>
+
+                <select name="select-choice-mini" id="select-choice-mini" data-mini="true" data-inline="true">
+                    <option value="APIM">APIM</option>
+                    <option value="APPM">APPM</option>
+                    <option value="UX">UX</option>
+                    <option value="BAM">BAM</option>
+                </select>
+        </div>
+
+        <div data-role="fieldcontain">
+            <label style="float:left; margin-right:20px; margin-top:4px;"for="select-team" class="select">Office</label>
+
+                <select name="select-choice-mini" id="select-choice-mini" data-mini="true" data-inline="true">
+                    <option value="APPM">Palm Grove</option>
+                    <option value="APIM">Trace Expert City</option>
+                    
+                </select>
+        </div>
+
+        <input name="checkbox-emailCopy" id="checkbox-emailCopy" type="checkbox">
+        <label for="checkbox-emailCopy" style="font-size:12px;">Send me copy of this order via email</label>
+
+        </div>
+        <div data-role="footer" data-position="fixed" class="footer">
+                <div class="center-wrapper">
+                    <a href="placeOrder.html" rel="external" data-position-to="window" id="btn-back" class="ui-btn ui-btn-c ui-corner-all mc-top-margin-1-5 ">Back</a>
+                    <a href="#confirm" data-position-to="window" rel="external" id="btn-confirm" class="ui-btn ui-btn-c ui-corner-all mc-top-margin-1-5 ">Confirm Order</a>
+                </div>
+        </div>
+    </div>
+
+</body>
+</html>
+

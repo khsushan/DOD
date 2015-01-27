@@ -1,0 +1,73 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>WSO2 DOD - Sign In</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="css/jquery.mobile-1.4.5.min.css"/>
+    <link href="css/themes/dod.css" rel="stylesheet"/>
+    <link href="css/jquery.mobile.icons.min.css" rel="stylesheet"/>
+    <link href="css/jquery.mobile.structure-1.4.5.min.css" rel="stylesheet"/>
+    <link href="css/app.css" rel="stylesheet"/>
+    <script src="js/jquery.min.js"></script>
+    <script src="js/jquery.mobile-1.4.5.min.js"></script>
+    <script type="text/javascript" charset="utf-8" src="cordova.js"></script> 
+    <script type="text/javascript" charset="utf-8">
+    	$(function() 
+    	{
+    		$('#btn-submit').click(function() {
+    			var userName = $('#txt-email').val();
+    			var password = $('#txt-password').val();
+    			alert('UserName'+userName);
+    			var email_provider = userName.split('@')[1];
+    			alert(email_provider);
+    			var isEmail_provider = email_provider.localeCompare("wso2.com");
+    			if(isEmail_provider == 0){
+    				cordova.exec (function(winParam) {
+    				var n = winParam.localeCompare("true"); 
+    				if(n == 0){
+    					alert("Login succses");
+    					localStorage.setItem("userName",userName);
+    					localStorage.setItem("password",password);
+    					$(location).attr('href','placeOrder.html');
+    				}else{
+    					alert("Please provide your correct authentication details"+n);
+    				}
+    				}, function(error) {
+    					alert(error);
+					}, "Controller", "Login",[userName,password]);
+				}else{
+					alert("Please enter your WSO2 userName and password");
+				}    			
+
+			});
+    	});
+
+    </script>
+</head>
+<body id="signPageBody">
+    <div data-role="page" id="signIn">
+        <div id="imgContainer">
+            <img src="img/logo.png"/>
+        </div>
+        <div role="main" class="ui-content">
+           
+           <div id="logInForm" class="center-wrapper">
+            <input type="text" name="txt-email" id="txt-email" value="" placeholder="Email" maxlength="20">
+            <input type="password" name="txt-password" id="txt-password" value="" placeholder="Password">
+            
+            <!--  direction to place Order page -->
+            <a href="#" rel="external" id="btn-submit" class="ui-btn ui-btn-c ui-corner-all mc-top-margin-1-5">Sign In</a>
+            </div>
+
+            <!--  label for incorrect credentials -->
+            <!-- </br>
+            <div class="center-wrapper">
+                <label class="text-danger" for="errorMsg">Please enter correct credentials</label>
+            </div> -->
+            
+
+        </div><!-- /content -->
+    </div><!-- /page -->
+</body>
+
+</html>
