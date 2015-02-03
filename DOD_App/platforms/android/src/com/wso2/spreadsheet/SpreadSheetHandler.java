@@ -14,6 +14,8 @@ import com.google.gdata.util.AuthenticationException;
 import com.google.gdata.util.ServiceException;
 
 import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 
@@ -37,22 +39,26 @@ public class SpreadSheetHandler {
 
 	public SpreadSheetHandler(String username, String password)
 			throws AuthenticationException {
-		this.username = username;
-		this.password = password;
+		this.username = "sachithu@wso2.com";
+		this.password = "19920129Sayuriushan!";
 		spreadsheetService = new SpreadsheetService("Spread Sheet version");
 		spreadsheetService.setProtocolVersion(SpreadsheetService.Versions.V3);
-		spreadsheetService.setUserCredentials(username, password);
+		Log.i(myTag,"Usernam : "+username+"Password :"+password);
+		spreadsheetService.setUserCredentials(this.username,this.password);
 
 	}
 
-	public boolean login() throws IOException {
-
-		String key = getGoogleAuthKey(username, password);
+	public boolean login(String userName,String password) throws IOException {
+		String key = getGoogleAuthKey(userName, password);
+		Log.i(myTag,"Key : "+key);
 		if (key.trim().equals("") || key.trim().equals(null)) {
 			return false;
 		}
 		return true;
+
 	}
+	
+	
 
 	private static final String _GOOGLE_LOGIN_URL = "https://www.google.com/accounts/ClientLogin";
 
@@ -149,18 +155,21 @@ public class SpreadSheetHandler {
 	}
 
 	// add new data row to spreasheet
-	public void addRow(String[] details, String spreadSheetUrl)
-			throws IOException, ServiceException {
+	public void addRow(String[] details,JSONObject jsonObject,String spreadSheetUrl)
+			throws IOException, ServiceException, JSONException {
 		Log.i(myTag, "Adding new data");
 		URL listFeedUrl = getListFeedUrl(spreadSheetUrl);
 		ListEntry row = new ListEntry();
 		String date = (DateFormat.format("dd/MM/yyyy hh:mm:ss",
 				new java.util.Date()).toString());
 		row.getCustomElements().setValueLocal("timestamp", date);
-		row.getCustomElements().setValueLocal("emailaddress", details[0]);
-		row.getCustomElements().setValueLocal("itemname", details[1]);
-		row.getCustomElements().setValueLocal("quantity", details[2]);
-		row.getCustomElements().setValueLocal("mobilenumber", details[3]);
+		row.getCustomElements().setValueLocal("emailaddress", jsonObject.getString("username"));
+		row.getCustomElements().setValueLocal("itemname", details[0]);
+		row.getCustomElements().setValueLocal("quantity", details[1]);
+		row.getCustomElements().setValueLocal("mobilenumber", jsonObject.getString("mobilenumber"));
+		row.getCustomElements().setValueLocal("office", jsonObject.getString("office"));
+		row.getCustomElements().setValueLocal("team", jsonObject.getString("team"));
+		row.getCustomElements().setValueLocal("restaurant", details[2]);
 		row = spreadsheetService.insert(listFeedUrl, row);
 	}
 
@@ -214,7 +223,10 @@ public class SpreadSheetHandler {
 		}
 		JSONArray jsonArray =  new JSONArray();
 		for (String string : menuItem) {
-			jsonArray.put(string);
+			if(string != null){
+				jsonArray.put(string);
+			}
+			
 		}
 		return jsonArray;
 	}

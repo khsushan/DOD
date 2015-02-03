@@ -3,6 +3,7 @@
 <head>
     <title>WSO2 DOD - Sign In</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href='http://fonts.googleapis.com/css?family=Roboto:400,300,500' rel='stylesheet' type='text/css'>
     <link rel="stylesheet" href="css/jquery.mobile-1.4.5.min.css"/>
     <link href="css/themes/dod.css" rel="stylesheet"/>
     <link href="css/jquery.mobile.icons.min.css" rel="stylesheet"/>
@@ -10,38 +11,117 @@
     <link href="css/app.css" rel="stylesheet"/>
     <script src="js/jquery.min.js"></script>
     <script src="js/jquery.mobile-1.4.5.min.js"></script>
-    <script type="text/javascript" charset="utf-8" src="cordova.js"></script> 
+    <script type="text/javascript" src="js/googlesignin.js"></script>
+    <script type="text/javascript" src="js/jquery.blockUI.js"></script>-
+    <script type="text/javascript" charset="utf-8" src="cordova.js"></script>-
     <script type="text/javascript" charset="utf-8">
-    	$(function() 
+       $(document).on('deviceready',function() 
     	{
-    		$('#btn-submit').click(function() {
-    			var userName = $('#txt-email').val();
-    			var password = $('#txt-password').val();
-    			alert('UserName'+userName);
-    			var email_provider = userName.split('@')[1];
-    			alert(email_provider);
-    			var isEmail_provider = email_provider.localeCompare("wso2.com");
-    			if(isEmail_provider == 0){
-    				cordova.exec (function(winParam) {
-    				var n = winParam.localeCompare("true"); 
-    				if(n == 0){
-    					alert("Login succses");
-    					localStorage.setItem("userName",userName);
-    					localStorage.setItem("password",password);
-    					$(location).attr('href','placeOrder.html');
-    				}else{
-    					alert("Please provide your correct authentication details"+n);
-    				}
-    				}, function(error) {
-    					alert(error);
-					}, "Controller", "Login",[userName,password]);
-				}else{
-					alert("Please enter your WSO2 userName and password");
-				}    			
+            var order_detail ={};
+            var d1 = new $.Deferred();
+            var d2 = new $.Deferred();
+            var d4 = new $.Deferred();
+            userDetailChek();
+            $( document ).bind( 'mobileinit', function(){
+                $.mobile.loader.prototype.options.text = "loading";
+                $.mobile.loader.prototype.options.textVisible = false;
+                $.mobile.loader.prototype.options.theme = "a";
+                $.mobile.loader.prototype.options.html = "";
+            });
+            
+            $("#btn-login-google").click(function(){
+                 callGoogle();
+            });
 
-			});
-    	});
+            var viewLoader  = function(){
+                $.blockUI({ css: { 
+                        border: 'none', 
+                        padding: '15px', 
+                        backgroundColor: '#000', 
+                        '-webkit-border-radius': '10px', 
+                        '-moz-border-radius': '10px', 
+                        opacity: .5, 
+                        color: '#fff' 
+                    } 
+                });
+                return d3.resolve();
+                //return d3.resolve();
+            }
 
+            $("#btn-submit").click(function(){
+                
+                    
+                /*$.when($.blockUI(loadVendors();)).done(function(){
+                });*/
+                $.blockUI(loadVendors());
+                $.when(d1,d2).done(function (){
+                    $.unblockUI;
+                    localStorage.setItem("items",JSON.stringify(order_detail));
+                    $(location).attr('href','placeOrder.html');
+
+                });               
+                
+            });
+            /*$(this).queue(function() {
+        $("#login_menu").slideUp();
+        $(this).dequeue();
+    }).queue(function() {
+        $('.login_menu_arrow.top').hide();
+        $(this).dequeue();
+    }).queue(function() {
+        $('.login_menu_arrow.bottom').show();
+        $(this).dequeue();
+    });*/   var clickCallbacks = $.Callbacks();
+            var loadVendors = function(){
+                cordova.exec (function(vendors) {            
+                   storeVendors(vendors);
+                   d1.resolve();
+                }, function(error) {
+                    //$.mobile.loading( 'hide',function(){});
+                    alert("error : "+error);
+                }, "Controller", "LoadVendors",[userName,"password"]);
+                return d1.promise();                
+                //d2.resolve();
+            }
+
+            var storeVendors = function(vendors){
+                var vendorName = "";
+                var j = 1;
+                //clickCallbacks.add(loadItems);
+                $.each( vendors, function(i, row) {
+                    console.log("vendors"+row)
+                    order_detail[row] ={};        
+                    loadItems(row).done(function(menu){
+                        order_detail[row] = menu;
+                        //alert(Object.keys(vendors).length+" length")
+                        //alert(JSON.stringify(order_detail));
+                        if(Object.keys(vendors).length == j){
+                          d2.resolve();
+                        }else{
+                          j++;    
+                        }
+                    });
+                    //clickCallbacks.fire(row);
+                    //setTimeout( loadItems(row),3000 ); 
+                    
+                });
+                //alert("function done");
+                return d2.promise();
+            }
+                
+            var loadItems = function (vendor){   
+                var d3 = new $.Deferred();                
+                cordova.exec (function(menu) { 
+                    //order_detail[vendor] = menu;  
+                    //alert(vendor+" : "+menu);
+                    d3.resolve(menu);
+                }, function(error) {
+                        alert(error);
+                }, "Controller", "LoadMenu",[userName,"",vendor]);
+                return d3.promise();
+            }
+
+        });         
     </script>
 </head>
 <body id="signPageBody">
@@ -56,18 +136,15 @@
             <input type="password" name="txt-password" id="txt-password" value="" placeholder="Password">
             
             <!--  direction to place Order page -->
-            <a href="#" rel="external" id="btn-submit" class="ui-btn ui-btn-c ui-corner-all mc-top-margin-1-5">Sign In</a>
+            <a href="#" rel="external" id="btn-submit" class="ui-btn ui-btn-c ui-corner-all mc-top-margin-1-5">Proceed With Current Login</a>
+            <a href="#" rel="external" id="btn-login-google" class="ui-btn ui-btn-c ui-corner-all mc-top-margin-1-5">Sign In With GOOGLE</a>
             </div>
-
             <!--  label for incorrect credentials -->
             <!-- </br>
             <div class="center-wrapper">
                 <label class="text-danger" for="errorMsg">Please enter correct credentials</label>
             </div> -->
-            
-
         </div><!-- /content -->
     </div><!-- /page -->
 </body>
-
 </html>

@@ -2,7 +2,8 @@
 <html>
 <head>
     <title>WSO2 DOD</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link href='http://fonts.googleapis.com/css?family=Roboto:400,300,500' rel='stylesheet' type='text/css'>
     <link rel="stylesheet" href="css/jquery.mobile-1.4.5.min.css"/>
     <link href="css/jquery.mobile.icons.min.css" rel="stylesheet"/>
     <link href="css/jquery.mobile.structure-1.4.5.min.css" rel="stylesheet"/>
@@ -11,45 +12,68 @@
     <script src="js/jquery.min.js"></script>
     <script src="js/jquery.mobile-1.4.5.min.js"></script>
     <script src="js/spinbox.js"></script>
-    <script src="js/hashmap.js"></script>
     <script src="js/jquery.url.js"></script>
-   <!-- <script type="text/javascript" charset="utf-8" src="cordova.js"></script>-->
+    <script src="js/jquery.isloading.min.js"></script>
+    <script type="text/javascript" charset="utf-8" src="cordova.js"></script>
     <script type="text/javascript">
         $(document).ready(function(){
-            alert('UserName'+localStorage.getItem("userName"));
             var userName = localStorage.getItem("userName");
             var password = localStorage.getItem("password");
-            var order_details = new Array();
-            var map = new Object();
-            var myHash = new Map("localStorage");
-            var ve = ["cafen5th","dinemore","kfc","redberries"];
-            loadVendors(ve);
+            var menu = localStorage.getItem("menu");
+            var order_detail ={};
+            var items = JSON.parse(localStorage.getItem("items"));
+            alert(JSON.stringify(items));
+            var resturant = "";
+            loadVendors();
+            /*$( document ).bind( 'mobileinit', function(){
+                $.mobile.loader.prototype.options.text = "loading";
+                $.mobile.loader.prototype.options.textVisible = false;
+                $.mobile.loader.prototype.options.theme = "a";
+                $.mobile.loader.prototype.options.html = "";
+            });
+
+
+            /*$.mobile.loading( 'show', {
+                        text: 'foo',
+                        textVisible: true,
+                        theme: 'z',
+                        html: ""
+                        });*/
+            //var ve = ["cafen5th","dinemore","kfc","redberries"];
+            //loadVendors(ve);
             
             
-            /*document.addEventListener("deviceready", function(){
+           /*document.addEventListener("deviceready", function(){
                     cordova.exec (function(vendors) {            
-                        loadVendors(vendors);
+                        loadVendors(vendors);                        
                     }, function(error) {
+                        //$.mobile.loading( 'hide',function(){});
                         alert(error);
                     }, "Controller", "LoadVendors",[userName,password]);
-            }, true); */                     
+            }, true); */
 
-            $('#btn-place-order').click(function(){
-                $.each( order_details, function(i, row) {
-                    console.log("Index "+i+" Value "+row);
-                }); 
-                $.mobile.changePage("orderConfirmation.html", {data:{ param1 :order_details } });
+                      
+            document.addEventListener("backbutton", clickedBack, false);
 
-            });
-            
-            function loadVendors(vendors){
-                $.each( vendors, function(i, row) {
-                    $('#select-choice-mini').append( new Option(row,row) )
-                });
+            function clickedBack(){
+                alert("you clicked back");
 
             }
 
-            $('#btn-confirm').click(function(){
+            document.addEventListener("resume", function() {
+                alert("back to placeOrder");                
+            })
+
+            
+            function loadVendors(){
+                $.each( items, function(key,items) {
+                    order_detail[key] ={};
+                    $('#select-choice-mini').append( new Option(key,key));
+                });
+                //$.mobile.loading( 'hide',function(){});
+            }
+
+            $('#ok-btn').click(function(){
                 var qty = $('#addQtyInput').val();
                 var item_id =$("#id_hidden").val();
                 var item_name = $("#item_name").text();
@@ -57,65 +81,88 @@
                 console.log("Qty "+qty);
                 console.log("item_id "+item_id);
                 var vendor = $('#select-choice-mini').val();
-                alert(vendor+"_"+item_name);
+                //alert(vendor+"_"+item_name);
                 if(parseInt(qty) > 0){
                     $("#checkbox_"+item_id+"[type='checkbox']").attr("checked",true);
                     $("#qtyLbl"+item_id).text(qty);                    
                     var items =  new Array();
-                    alert(order_details[vendor+"_"+item_name])
-                    order_details[vendor+"_"+item_name] = qty;  
+                    order_detail[vendor][item_name] = qty;
+                    // alert(order_details[vendor+"_"+item_name])
+                    //order_details[vendor+"_"+item_name] = qty;  
                 }else{
-                    if(typeof(order_details[vendor+"_"+item_name]) != 'undefined'){
+                    if(typeof(order_detail[vendor][item_name]) != 'undefined'){
                         console.log("delete item");
-                        delete order_details[vendor+"_"+item_name];
+                        delete order_detail[vendor][item_name];
                         $("#checkbox_"+item_id+"[type='checkbox']").attr("checked",false);
                         $("#qtyLbl"+item_id).text(0);     
                     }                    
                 }
+
+               // alert("Confirm" + JSON.stringify(order_detail));
+
+            });
+            
+            $('#select-choice-mini').click(function(){
+                var vendor = $('#select-choice-mini').val();
+                var isChange = resturant.localeCompare(vendor); 
+                /*if(isChange == 0){
+                    $.mobile.loading( 'show', {
+                        text: 'foo',
+                        textVisible: true,
+                        theme: 'z',
+                        html: ""
+                        });
+                }*/
             });
 
             $('#select-choice-mini').change(
                 function() {
-                /*var vendor = $('#select-choice-mini').val();
-                cordova.exec (function(menu) {            
-                    addMenu(menu)
+                var vendor = $('#select-choice-mini').val();
+                resturant = vendor;
+                var menu = items[vendor];
+                addMenu(menu);
+                /*cordova.exec (function(menu) { 
+                    addMenu(menu)                    
                 }, function(error) {
                     alert(error);
-                }, "Controller", "LoadMenu",[userName,password,vendor]);*/
-                var menu = ["Roast Chicken Fried Rice","Fish Fried Rice","Vegetable Submarine","Tuna Submarine","Chicken Submarine","Hoppers"];
-                addMenu(menu);
+                }, "Controller", "LoadMenu",[userName,password,vendor]);
+                /*var menu = ["Roast Chicken Fried Rice","Fish Fried Rice","Vegetable Submarine","Tuna Submarine","Chicken Submarine","Hoppers"];
+                addMenu(menu);*/
             });
 
             function addMenu(menu){
-                
-                //$('#itemList').empty()
                 var vendor = $('#select-choice-mini').val();
                 $("#myTable > tbody").html("");
                 var table = $("#myTable")
                 $.each( menu, function(i, row) {
-                    console.log("Item Name : "+row);
-                    var chekBoxID = "checkbox_"+row;
-                    var qtyLblID = "qtyLbl"+row;
-                    var html_elements = "";
-                    if(typeof(order_details[vendor+"_"+row]) != "undefined"){
-                        var qty = order_details[vendor+"_"+row];
-                        html_elements = '<tr><td>'
-                                        +'<input name="item_checkbox" onchange="javascript:void(0);" id='+chekBoxID+' type="checkbox" checked="true" class="ccf"/> </td>'
-                                        +'<td><label for="+chekBoxID+"><a href="javascript:void(0);" class="aaf" data-item='+row+'>'+row+'</a><label></td>'
+                    if(row){
+                        console.log("Item Name : "+row);
+                        var chekBoxID = "checkbox_"+row;
+                        var qtyLblID = "qtyLbl"+row;
+                        var html_elements = "";
+                        if(typeof(order_detail[vendor][row]) != "undefined"){
+                            var qty = order_detail[vendor][row];    
+                            html_elements = '<tr><td width="10% >'
+                                        +'<input name="item_checkbox" onchange="javascript:void(0);" id='+chekBoxID+' type="checkbox" checked="true" class="ccf"/>' 
+                                        +'</td>'
+                                        +'<td style="text-align:left;padding-top:6px;"><label for='+chekBoxID+'><a href="javascript:void(0);" class="aaf" data-item='+row+'>'+row+'</a></label></td>'
                                         +'<td>&nbsp;</td>'
-                                        +'<td align="center">&nbsp;<label class="qty" id='+qtyLblID+'>'+qty+'</label>'
+                                        +'<td style="float:right">&nbsp;<label class="qty" id='+qtyLblID+'>'+qty+'</label>'
                                         +'</td></tr>'    
-                    }else{
-                        html_elements = '<tr><td>'
+                        }else{
+                            html_elements = '<tr><td width="10%" >'
                                         +'<input name="item_checkbox" onchange="javascript:void(0);" id='+chekBoxID+' type="checkbox" class="ccf"/> </td>'
-                                        +'<td><label for="+chekBoxID+"><a href="javascript:void(0);" class="aaf" data-item='+row+'>'+row+'</a><label></td>'
+                                        +'<td style="text-align:left;padding-top:6px;"><label for='+chekBoxID+'><a href="javascript:void(0);" class="aaf" data-item='+row+'>'+row+'</a></label></td>'
                                         +'<td>&nbsp;</td>'
-                                        +'<td align="center">&nbsp;<label class="qty" id='+qtyLblID+'>0</label>'
+                                        +'<td style="float:right">&nbsp;<label class="qty" id='+qtyLblID+'>0</label>'
                                         +'</td></tr>'    
+                        }
+                        $(html_elements).appendTo($("#myTable"));    
                     }
                     
-                    $(html_elements).appendTo($("#myTable"));
-                });        
+                });                
+                //$.mobile.loading( 'hide',function(){})        
+
             }
            
 
@@ -135,15 +182,17 @@
                     $("#item_name").text(text);
                     $("#id_hidden").empty();
                     $("#id_hidden").val(itemID);
-                    $('#popupLogin').popup('open', {
-                         transition: 'pop'
+                    $.mobile.changePage('#addQuantity', {
+                        transition : 'slide',
+                        role       : 'page'
                     });
                 }else{
                     console.log("unselected");
                     $("#qtyLbl"+itemID).text(0);
                     //remove from order list
-                    if(typeof(order_details[vendor+"_"+text]) != 'undefined'){
-                        delete order_details[vendor+"_"+text];
+                    if(typeof(order_detail[vendor][text]) != 'undefined'){
+                        console.log("item deleted");
+                        delete order_detail[vendor][text];;
                     }
                 }                
             });
@@ -159,10 +208,16 @@
                 $("#item_name").text(text);
                 $("#id_hidden").empty();
                 $("#id_hidden").val(itemName);
-                $('#popupLogin').popup('open', {
-                         transition: 'pop'
+                $.mobile.changePage('#addQuantity', {
+                    transition : 'slide',
+                    role       : 'page'
                 });
 
+            });
+
+            $('#btn-place-order').click(function(){
+                localStorage.setItem("order_details",JSON.stringify(order_detail));
+                $(location).attr('href','orderConfirmation.html');             
             });
 
         });
@@ -173,7 +228,7 @@
 </head>
 <body>
     <div data-role="page" id="placeOrder">
-        <div class="header" data-role="header" data-theme="c" data-position="fixed">
+        <div class="header" data-role="header" data-theme="c">
             <h1 >WSO2 Dinner On Demand</h1>
         </div>
         <!-- /header -->
@@ -184,55 +239,24 @@
                 <label style="float:left; margin-right:20px; margin-top:7px;" for="select-vendor" class="select">Order from </label>
                 <select name="select-choice-mini" id="select-choice-mini" data-mini="true" data-inline="true">
                     <option value="None">None</option>
-                    <option value="CafeN5th">Cafe On The 5th</option>
+                    <!--<option value="CafeN5th">Cafe On The 5th</option>
                     <option value="Dinemore">Dinemore</option>
                     <option value="KFC">KFC</option>
-                    <option value="Redberries">Redberries</option>
+                    <option value="Redberries">Redberries</option>-->
                 </select>
             </div>
     
             <fieldset data-role="controlgroup"  >
                     <legend><h4>Select menu item to add quantity</h4></legend>
-                <div id="itemList">       
-                    <table id="myTable">
+                <div width="100%" id="itemList">       
+                    <table width="100%" id="myTable">
                         <tbody>
                             
                         </tbody>
                     </table>
                 </div>
             </fieldset>
-            <!-- popUp -->
-            <div data-role="popup" id="popupLogin" data-overlay-theme="a" data-theme="a" data-dismissible="false" class="ui-corner-all">
-                <a href="#" data-rel="back" class="ui-btn-left ui-corner-all ui-shadow ui-btn-a ui-icon-delete ui-btn-icon-notext ui-btn-left"></a>
-
-                    <div role="main" class="ui-content ui-corner-all"  >
-                                              
-                        <div id="popUpHeader" data-role="header" data-theme="c" data-position="fixed">
-                            <h1 >Add Quantity</h1>
-                        </div><!-- /header -->
-
-                        <div class="center-wrapper">
-                            <h3>Add Quantity</h3>
-                        </div>
-                        <input type="hidden" id="id_hidden" value="none" />
-                        <table id="addQtyTable" cellspacing="0" class="ui-corner-all table-stroke ui-responsive ui-shadow ">    <tbody>
-                                <tr>
-                                    <td width="70%" class="left"><label id="item_name"  name="item_name"> </label></td>
-                                    <td><input type="text" data-mini="true" data-role="spinbox" name="addQtyInput" id="addQtyInput" data-options='{"type":"vertical"}' value="1" max="100" min="0" /></td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-
-                    <div data-role="footer"  id ="popUpFooter" class="footer">
-                        <div class="center-wrapper">
-                            <a href="#" data-rel="back" data-position-to="window" id="btn-confirm" class="ui-btn ui-btn-c ui-corner-all">OK</a>
-                        </div>
-                    </div>
-    
-            </div> 
-
-               <!--  footer of the page -->
+            <!--  footer of the page -->
             <div data-role="footer" data-position="fixed" class="footer">
                 <div class="center-wrapper">
                     <a href="#"  rel="external" id="btn-place-order" class="ui-btn ui-btn-c ui-corner-all mc-top-margin-1-5">Place Order</a>
@@ -241,6 +265,34 @@
    
         </div><!-- /content -->
     </div><!-- /page -->
+    <!--enter qty -->
+    <div data-role="page" id="addQuantity" >
+        <div data-role="header" data-theme="c" data-position="fixed">
+            <h1 >Add Quantity</h1>
+        </div><!-- /header-->
+        <div role="main" class="ui-content" >
+        <input type="hidden" id="id_hidden" value="none" />
+        
+        <table id="addQtyTable" width="100%" style="vertical-align: middle " cellspacing="0" class="center-wrapper ui-corner-all table-stroke ui-responsive ui-shadow ">    <tbody>
+                                <tr>
+                                    <th class="left"><label id="item_name"  name="item_name"> </label></th>  
+                                </tr>
+                                <tr>                
+                                    <td style="padding:20px;" class="center-wrapper"><input type="text" data-mini="true" data-role="spinbox" name="addQtyInput" id="addQtyInput" data-options='{"type":"horizontal"}' value="1" max="100" min="0" /></td>
+                                </tr>
+                            </tbody>
+                        </table>
+      
+        
+        </div>
+        <div data-role="footer" data-position="fixed" class="footer">
+                <div class="center-wrapper">
+                    <a href="placeOrder.html" data-rel="back" data-transition="slide" data-position-to="window" id="btn-back" class="ui-btn ui-btn-c ui-corner-all mc-top-margin-1-5 ">Back</a>
+                    <a href="placeOrder.html" data-rel="back" data-transition="slide" data-position-to="window" id="ok-btn" class="ui-btn ui-btn-c ui-corner-all">OK</a>
+                </div>
+        </div>
+
+    </div>
     
 </body>
 </html>
