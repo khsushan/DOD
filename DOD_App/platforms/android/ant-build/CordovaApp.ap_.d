@@ -193,6 +193,7 @@
 /home/ushan/Eclipse_Anroid/DOD_App/platforms/android/assets/www/js/jquery.min.js \
 /home/ushan/Eclipse_Anroid/DOD_App/platforms/android/assets/www/js/jquery.mobile-1.4.5.js \
 /home/ushan/Eclipse_Anroid/DOD_App/platforms/android/assets/www/js/cordova_plugins.js \
+/home/ushan/Eclipse_Anroid/DOD_App/platforms/android/assets/www/js/jquery.blockUI.js \
 /home/ushan/Eclipse_Anroid/DOD_App/platforms/android/assets/www/js/googlesignin.js \
 /home/ushan/Eclipse_Anroid/DOD_App/platforms/android/assets/www/js/spinbox.js \
 /home/ushan/Eclipse_Anroid/DOD_App/platforms/android/assets/www/js/jquery.url.js \

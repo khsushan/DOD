@@ -26,6 +26,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.UUID;
 
 /**
  * Created by ushan on 1/14/15.
@@ -37,67 +38,19 @@ public class SpreadSheetHandler {
 	private SpreadsheetService spreadsheetService;
 	final String myTag = "Dinner Demand";
 
-	public SpreadSheetHandler(String username, String password)
-			throws AuthenticationException {
+	public SpreadSheetHandler() throws AuthenticationException {
 		this.username = "sachithu@wso2.com";
-		this.password = "19920129Sayuriushan!";
+		this.password = "19920129Sa!";
 		spreadsheetService = new SpreadsheetService("Spread Sheet version");
 		spreadsheetService.setProtocolVersion(SpreadsheetService.Versions.V3);
-		Log.i(myTag,"Usernam : "+username+"Password :"+password);
-		spreadsheetService.setUserCredentials(this.username,this.password);
-
-	}
-
-	public boolean login(String userName,String password) throws IOException {
-		String key = getGoogleAuthKey(userName, password);
-		Log.i(myTag,"Key : "+key);
-		if (key.trim().equals("") || key.trim().equals(null)) {
-			return false;
-		}
-		return true;
+		Log.i(myTag, "Username : " + username + "Password :" + password);
+		spreadsheetService.setUserCredentials(this.username, this.password);
 
 	}
 	
-	
-
-	private static final String _GOOGLE_LOGIN_URL = "https://www.google.com/accounts/ClientLogin";
-
-	public static String getGoogleAuthKey(String _USERNAME, String _PASSWORD)
-			throws IOException {
-		Document doc = Jsoup
-				.connect(_GOOGLE_LOGIN_URL)
-				.data("accountType", "GOOGLE", "Email", _USERNAME, "Passwd",
-						_PASSWORD, "service", "reader", "source",
-						"&lt;your app name&gt;")
-				.userAgent("&lt;your app name&gt;").timeout(4000).post();
-		String _AUTHKEY = doc
-				.body()
-				.text()
-				.substring(doc.body().text().indexOf("Auth="),
-						doc.body().text().length());
-		_AUTHKEY = _AUTHKEY.replace("Auth=", "");
-		return _AUTHKEY;
-	}
-
-	private void postData(String[] details) {
-		// "sachithu@wso2.com "Submarine"
-		HttpRequest mReq = new HttpRequest();
-		String fullUrl = "https://docs.google.com/a/wso2.com/forms/d/1HtqigfCDCXh4PXQlWS8FCR4I1ruh-ucb56lVg5pQC9c/formResponse";
-		String data = "entry.1054276027="
-				+ URLEncoder.encode(details[0])
-				+ "&"
-				+ // email
-					// item name & quantity
-				"entry.1841418863=" + URLEncoder.encode(details[1]) + "&"
-				+ "entry.89181275=" + URLEncoder.encode(details[2]) + "&"
-				+ "entry.669097926=" + URLEncoder.encode(details[3]);// mobile
-																		// number
-		String response = mReq.sendPost(fullUrl, data);
-		Log.i(myTag, response);
-	}
-
-	public void getdetails() {
+	public JSONObject getdetails(String email) throws JSONException {
 		String SPREADSHEET_URL = "https://spreadsheets.google.com/feeds/spreadsheets/1-nsFcc3LUdeu5sMpwEpz3FRgoLtB-kXlj3-cjqjG_dc";
+		JSONObject vendors = new JSONObject();
 		try {
 			URL metafeedUrl = new URL(SPREADSHEET_URL);
 			com.google.gdata.data.spreadsheet.SpreadsheetEntry spreadsheet = spreadsheetService
@@ -109,16 +62,59 @@ public class SpreadSheetHandler {
 			ListFeed listFeed = (ListFeed) spreadsheetService.getFeed(
 					listFeedUrl, ListFeed.class);
 			for (ListEntry entry : listFeed.getEntries()) {
-				for (String tag : entry.getCustomElements().getTags()) {
-					Log.i(myTag, " New row    " + tag + ": "
-							+ entry.getCustomElements().getValue(tag));
+				String entryEmail = entry.getCustomElements().getValue(
+						"emailaddress");
+				if (email.equals(entryEmail)) {
+					String id = entry.getCustomElements().getValue("id");
+					String vendor = entry.getCustomElements().getValue(
+							"restaurant");
+					String time = entry.getCustomElements().getValue(
+							"timestamp");
+					Log.i(myTag, "timestamp " + time);
+					String itemName = entry.getCustomElements().getValue(
+							"itemname");
+					Log.i(myTag, "Item name " + itemName);
+					String qty = entry.getCustomElements().getValue("quantity");
+					Log.i(myTag, "Quantity " + qty);
+					String array[] = time.split(" ");
+					String withoutSeconds = array[1];
+					String status = entry.getCustomElements().getValue("status");
+					
+					JSONArray jsonArray = new JSONArray();
+					jsonArray.put(itemName);
+					jsonArray.put(qty);
+					jsonArray.put(withoutSeconds);
+					jsonArray.put(status);
+					
+					if (vendors.has(id)) {
+						JSONObject vendor_details = vendors.getJSONObject(id);
+						if (vendor_details.has(vendor)) {
+							JSONObject items = vendor_details
+									.getJSONObject(vendor);							
+							items.put(time,jsonArray);
+						}else{
+							JSONObject items = new JSONObject();
+							items.put(time,jsonArray);
+							vendor_details.put(vendor,items);
+						}
+					} else {
+						JSONObject items = new JSONObject();
+						items.put(time,jsonArray);
+						JSONObject vendor_details = new JSONObject();
+						vendor_details.put(vendor, items);
+						vendors.put(id, vendor_details);
+					}
 				}
+				
+				
+
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
 		} catch (ServiceException e) {
 			e.printStackTrace();
 		}
+		return vendors;
 	}
 
 	// to get list for feed
@@ -155,21 +151,29 @@ public class SpreadSheetHandler {
 	}
 
 	// add new data row to spreasheet
-	public void addRow(String[] details,JSONObject jsonObject,String spreadSheetUrl)
-			throws IOException, ServiceException, JSONException {
+	public void addRow(String[] details, JSONObject jsonObject,
+			String spreadSheetUrl) throws IOException, ServiceException,
+			JSONException {
 		Log.i(myTag, "Adding new data");
+
 		URL listFeedUrl = getListFeedUrl(spreadSheetUrl);
 		ListEntry row = new ListEntry();
 		String date = (DateFormat.format("dd/MM/yyyy hh:mm:ss",
 				new java.util.Date()).toString());
+		row.getCustomElements().setValueLocal("id", jsonObject.getString("ID"));
 		row.getCustomElements().setValueLocal("timestamp", date);
-		row.getCustomElements().setValueLocal("emailaddress", jsonObject.getString("username"));
+		row.getCustomElements().setValueLocal("emailaddress",
+				jsonObject.getString("username"));
 		row.getCustomElements().setValueLocal("itemname", details[0]);
 		row.getCustomElements().setValueLocal("quantity", details[1]);
-		row.getCustomElements().setValueLocal("mobilenumber", jsonObject.getString("mobilenumber"));
-		row.getCustomElements().setValueLocal("office", jsonObject.getString("office"));
-		row.getCustomElements().setValueLocal("team", jsonObject.getString("team"));
+		row.getCustomElements().setValueLocal("mobilenumber",
+				jsonObject.getString("mobilenumber"));
+		row.getCustomElements().setValueLocal("office",
+				jsonObject.getString("office"));
+		row.getCustomElements().setValueLocal("team",
+				jsonObject.getString("team"));
 		row.getCustomElements().setValueLocal("restaurant", details[2]);
+		row.getCustomElements().setValueLocal("status","Pending");
 		row = spreadsheetService.insert(listFeedUrl, row);
 	}
 
@@ -204,7 +208,7 @@ public class SpreadSheetHandler {
 			jsonArray.put(string);
 		}
 		return jsonArray;
-		//return columnHeadings.toArray(new String[columnHeadings.size()]);
+		// return columnHeadings.toArray(new String[columnHeadings.size()]);
 		// return null;
 	}
 
@@ -221,12 +225,29 @@ public class SpreadSheetHandler {
 				}
 			}
 		}
-		JSONArray jsonArray =  new JSONArray();
+		JSONArray jsonArray = new JSONArray();
 		for (String string : menuItem) {
-			if(string != null){
+			if (string != null) {
 				jsonArray.put(string);
 			}
-			
+
+		}
+		return jsonArray;
+	}
+	
+	public JSONArray getTeams() throws IOException, ServiceException{
+		String spreadSheetUrl = "https://spreadsheets.google.com/feeds/spreadsheets/1ILbynmHNCdVu3gCVMS08woRhqsbI8jFuqEOnmcID83M";
+		ListFeed listFeed = getListFeed(spreadSheetUrl);
+		Set<String> menuItem = new HashSet<String>();
+		for (ListEntry entry : listFeed.getEntries()) {
+			menuItem.add(entry.getCustomElements().getValue("team"));
+		}
+		JSONArray jsonArray = new JSONArray();
+		for (String string : menuItem) {
+			if (string != null) {
+				jsonArray.put(string);
+			}
+
 		}
 		return jsonArray;
 	}

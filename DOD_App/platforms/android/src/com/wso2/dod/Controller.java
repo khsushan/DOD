@@ -2,6 +2,7 @@ package com.wso2.dod;
 
 import java.io.IOException;
 import java.util.Iterator;
+import java.util.UUID;
 
 import org.apache.cordova.CallbackContext;
 import org.apache.cordova.CordovaPlugin;
@@ -35,30 +36,9 @@ public class Controller extends CordovaPlugin {
 			@Override
 			public void run() {
 				try {
-					if (action.equals("Login")) {
-						displayText = "UserName " + args.getString(0)
-								+ " Password" + args.getString(1);
-						Log.i(myTag, displayText);
+					if (action.equals("LoadVendors")) {
 						try {
-							spreadSheetHandler = new SpreadSheetHandler(args
-									.getString(0), args.getString(1));
-							boolean isLogged = spreadSheetHandler.login(args
-									.getString(0), args.getString(1));
-							Log.i(myTag, "Is Logged :" + isLogged);
-							callbackContext.success(isLogged + "");
-						} catch (AuthenticationException e) {
-							Log.i(myTag, e.getMessage());
-							callbackContext.error("Exception :"
-									+ e.getMessage());
-						} catch (IOException e) {
-							Log.i(myTag, "Exception :" + e.getMessage());
-							callbackContext.success(e.getMessage());
-						}
-
-					} else if (action.equals("LoadVendors")) {
-						try {
-							spreadSheetHandler = new SpreadSheetHandler(args
-									.getString(0), args.getString(1));
+							spreadSheetHandler = new SpreadSheetHandler();
 							JSONArray vendors = spreadSheetHandler
 									.getResturantNames();
 							Log.i(myTag, "Vendor array is : " + vendors);
@@ -77,8 +57,7 @@ public class Controller extends CordovaPlugin {
 						}
 					} else if (action.equals("LoadMenu")) {
 						try {
-							spreadSheetHandler = new SpreadSheetHandler(args
-									.getString(0), args.getString(1));
+							spreadSheetHandler = new SpreadSheetHandler();
 							JSONArray jsonArray = spreadSheetHandler
 									.getItems(args.getString(2));
 							callbackContext.success(jsonArray);
@@ -96,10 +75,11 @@ public class Controller extends CordovaPlugin {
 
 						JSONObject userDetails = args.getJSONObject(0);
 						userDetails.put("mobilenumber", mobileNumber);
+						UUID uuid = new UUID(999999, 111111);
+						String orderID = uuid.randomUUID().toString();
+						userDetails.put("ID", orderID);
 						try {
-							spreadSheetHandler = new SpreadSheetHandler(
-									userDetails.getString("username"),
-									userDetails.getString("password"));
+							spreadSheetHandler = new SpreadSheetHandler();
 						} catch (AuthenticationException e) {
 							// TODO Auto-generated catch block
 							e.printStackTrace();
@@ -132,16 +112,44 @@ public class Controller extends CordovaPlugin {
 										System.out.println();
 									} catch (IOException e) {
 										// TODO Auto-generated catch block
-										e.printStackTrace();
+										callbackContext.error(e.getMessage());
 									} catch (ServiceException e) {
 										// TODO Auto-generated catch block
-										e.printStackTrace();
+										callbackContext.error(e.getMessage());
 									}
 									System.out.println("");
 								}
+								callbackContext.success("done");
 							}
 						}
 						// spreadSheetHandler.addRow(details, spreadSheetUrl)
+					} else if (action.equals("getDetails")) {
+						try {
+							spreadSheetHandler = new SpreadSheetHandler();
+							JSONObject returnObject = spreadSheetHandler
+									.getdetails(args.getString(0));
+							callbackContext.success(returnObject);
+						} catch (AuthenticationException e) {
+							// TODO Auto-generated catch block
+							callbackContext.error(e.getMessage());
+						}
+					}else if( (action.equals("loadTeams"))) {
+						try {
+							spreadSheetHandler = new SpreadSheetHandler();
+						} catch (AuthenticationException e) {
+							// TODO Auto-generated catch block
+							callbackContext.error(e.getMessage());
+						}
+						try {
+							JSONArray teams =  spreadSheetHandler.getTeams();
+							callbackContext.success(teams);
+						} catch (IOException e) {
+							
+							callbackContext.error(e.getMessage());
+						} catch (ServiceException e) {
+							// TODO Auto-generated catch block
+							callbackContext.error(e.getMessage());
+						}
 					}
 				} catch (JSONException e) {
 					e.printStackTrace();

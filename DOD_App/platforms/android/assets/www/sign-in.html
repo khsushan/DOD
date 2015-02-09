@@ -22,19 +22,18 @@
             var d2 = new $.Deferred();
             var d4 = new $.Deferred();
             userDetailChek();
-            $( document ).bind( 'mobileinit', function(){
-                $.mobile.loader.prototype.options.text = "loading";
-                $.mobile.loader.prototype.options.textVisible = false;
-                $.mobile.loader.prototype.options.theme = "a";
-                $.mobile.loader.prototype.options.html = "";
-            });
-            
+                
+            $(document).ajaxStop(function(){
+                userDetailChek();
+            }); 
+
             $("#btn-login-google").click(function(){
                  callGoogle();
             });
 
             var viewLoader  = function(){
-                $.blockUI({ css: { 
+                setTimeout(function(){
+                    $.blockUI({ css: { 
                         border: 'none', 
                         padding: '15px', 
                         backgroundColor: '#000', 
@@ -42,84 +41,67 @@
                         '-moz-border-radius': '10px', 
                         opacity: .5, 
                         color: '#fff' 
-                    } 
-                });
-                return d3.resolve();
-                //return d3.resolve();
+                        } 
+                    });
+                },2000);
+                
             }
 
             $("#btn-submit").click(function(){
-                
-                    
-                /*$.when($.blockUI(loadVendors();)).done(function(){
-                });*/
-                $.blockUI(loadVendors());
+                viewLoader();
+                loadVendors();
+                //loadTeams();                
                 $.when(d1,d2).done(function (){
                     $.unblockUI;
                     localStorage.setItem("items",JSON.stringify(order_detail));
-                    $(location).attr('href','placeOrder.html');
+                    $(location).attr('href','manage-view.html');
 
                 });               
                 
             });
-            /*$(this).queue(function() {
-        $("#login_menu").slideUp();
-        $(this).dequeue();
-    }).queue(function() {
-        $('.login_menu_arrow.top').hide();
-        $(this).dequeue();
-    }).queue(function() {
-        $('.login_menu_arrow.bottom').show();
-        $(this).dequeue();
-    });*/   var clickCallbacks = $.Callbacks();
+
             var loadVendors = function(){
                 cordova.exec (function(vendors) {            
                    storeVendors(vendors);
                    d1.resolve();
-                }, function(error) {
-                    //$.mobile.loading( 'hide',function(){});
+                }, function(error) {                   
                     alert("error : "+error);
                 }, "Controller", "LoadVendors",[userName,"password"]);
-                return d1.promise();                
-                //d2.resolve();
+                return d1.promise();                               
             }
 
             var storeVendors = function(vendors){
                 var vendorName = "";
-                var j = 1;
-                //clickCallbacks.add(loadItems);
+                var j = 1;                
                 $.each( vendors, function(i, row) {
                     console.log("vendors"+row)
                     order_detail[row] ={};        
                     loadItems(row).done(function(menu){
                         order_detail[row] = menu;
-                        //alert(Object.keys(vendors).length+" length")
-                        //alert(JSON.stringify(order_detail));
                         if(Object.keys(vendors).length == j){
                           d2.resolve();
                         }else{
                           j++;    
                         }
-                    });
-                    //clickCallbacks.fire(row);
-                    //setTimeout( loadItems(row),3000 ); 
+                    });                    
                     
-                });
-                //alert("function done");
+                });                
                 return d2.promise();
             }
                 
             var loadItems = function (vendor){   
                 var d3 = new $.Deferred();                
                 cordova.exec (function(menu) { 
-                    //order_detail[vendor] = menu;  
-                    //alert(vendor+" : "+menu);
                     d3.resolve(menu);
                 }, function(error) {
-                        alert(error);
+                    alert(error);
                 }, "Controller", "LoadMenu",[userName,"",vendor]);
                 return d3.promise();
             }
+
+            
+
+
 
         });         
     </script>
@@ -133,17 +115,12 @@
            
            <div id="logInForm" class="center-wrapper">
             <input type="text" name="txt-email" id="txt-email" value="" placeholder="Email" maxlength="20">
-            <input type="password" name="txt-password" id="txt-password" value="" placeholder="Password">
+            <!--<input type="password" name="txt-password" id="txt-password" value="" placeholder="Password">-->
             
             <!--  direction to place Order page -->
             <a href="#" rel="external" id="btn-submit" class="ui-btn ui-btn-c ui-corner-all mc-top-margin-1-5">Proceed With Current Login</a>
             <a href="#" rel="external" id="btn-login-google" class="ui-btn ui-btn-c ui-corner-all mc-top-margin-1-5">Sign In With GOOGLE</a>
-            </div>
-            <!--  label for incorrect credentials -->
-            <!-- </br>
-            <div class="center-wrapper">
-                <label class="text-danger" for="errorMsg">Please enter correct credentials</label>
-            </div> -->
+            </div>            
         </div><!-- /content -->
     </div><!-- /page -->
 </body>

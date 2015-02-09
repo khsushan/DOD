@@ -84,23 +84,42 @@ var googleapi = {
     }
 
     function getUserInfo() {
-          $.ajax({
+        $.ajax({
             url: 'https://www.googleapis.com/oauth2/v1/userinfo?access_token=' + accessToken,
             data: null,
             success: function(resp) {
               user    =   resp;
               console.log("User information "+JSON.stringify(user));
               console.log("Set user email "+user.email);
-              localStorage.setItem("email",user.email);
-              localStorage.setItem("isLogged",true);
-              localStorage.setItem("userName",user.name);
+              var email = user.email;
+              var index = -1;
+              if(email){
+                 var emailProvider =  email.split("@")[1];
+                 index = emailProvider.localeCompare("wso2.com");
+              }                           
+              if(index == 0){
+                localStorage.setItem("email",user.email);
+                localStorage.setItem("isLogged",true);
+                localStorage.setItem("userName",user.name);     
+              }else if(email){
+                 $("#txt-email").val("please use your WSO2 account"); 
+                 if(localStorage.getItem("email")){
+                     localStorage.removeItem("email");
+                     localStorage.removeItem("isLogged");
+                     localStorage.removeItem("userName");
+                 }                 
+              }else{
+                $("#txt-email").val("you need to sign in first"); 
+              }
               userDetailChek();
+                      
             },
             dataType: "jsonp",
             error:function(error){
               
             }
       });
+      
       disconnectUser();    
 
     }
@@ -134,19 +153,16 @@ var googleapi = {
     var isLogged;
     var userName;
     function userDetailChek(){
-                email  = localStorage.getItem("email");
-                isLogged =  localStorage.getItem("isLogged");
-                userName =  localStorage.getItem("userName");
-                alert(email+"@"+isLogged+"@"+userName);
-                if(email || isLogged || userName){
-                   //$('#btn-submit').attr('disabled','disabled');
-                   $('#btn-submit').show();
-                   $('input[type="submit"]').removeAttr('disabled');
-                   $("#txt-email").val(email);
-                   
-                }else{
-                   $('#btn-submit').hide();
-                   alert("you need to sign in first");
-                   $("#txt-email").val("you need to sign in first"); 
-                }
-            }
+        email  = localStorage.getItem("email");
+        isLogged =  localStorage.getItem("isLogged");
+        userName =  localStorage.getItem("userName");
+        //alert(email+"@"+isLogged+"@"+userName);
+        if(email || isLogged || userName){
+          //$('#btn-submit').attr('disabled','disabled');
+          $('#btn-submit').show();
+          $('input[type="submit"]').removeAttr('disabled');
+          $("#txt-email").val(email);                   
+        }else{
+            $('#btn-submit').hide();
+        }
+  }

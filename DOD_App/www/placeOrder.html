@@ -3,6 +3,7 @@
 <head>
     <title>WSO2 DOD</title>
     <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link href='http://fonts.googleapis.com/css?family=Roboto:400,300,500' rel='stylesheet' type='text/css'>
     <link rel="stylesheet" href="css/jquery.mobile-1.4.5.min.css"/>
     <link href="css/jquery.mobile.icons.min.css" rel="stylesheet"/>
     <link href="css/jquery.mobile.structure-1.4.5.min.css" rel="stylesheet"/>
@@ -20,46 +21,35 @@
             var password = localStorage.getItem("password");
             var menu = localStorage.getItem("menu");
             var order_detail ={};
+            var items = JSON.parse(localStorage.getItem("items"));
+            //alert(JSON.stringify(items));
             var resturant = "";
-            /*$( document ).bind( 'mobileinit', function(){
-                $.mobile.loader.prototype.options.text = "loading";
-                $.mobile.loader.prototype.options.textVisible = false;
-                $.mobile.loader.prototype.options.theme = "a";
-                $.mobile.loader.prototype.options.html = "";
-            });
+            loadVendors();
+            
+            document.addEventListener("backbutton", clickedBack, false);
 
+            function clickedBack(){
+                alert("you clicked back");
 
-            /*$.mobile.loading( 'show', {
-                        text: 'foo',
-                        textVisible: true,
-                        theme: 'z',
-                        html: ""
-                        });*/
-            //var ve = ["cafen5th","dinemore","kfc","redberries"];
-            //loadVendors(ve);
-            
-            
-           document.addEventListener("deviceready", function(){
-                    cordova.exec (function(vendors) {            
-                        loadVendors(vendors);                        
-                    }, function(error) {
-                        //$.mobile.loading( 'hide',function(){});
-                        alert(error);
-                    }, "Controller", "LoadVendors",[userName,password]);
-            }, true); 
-
-                      
-            
-            
-            function loadVendors(vendors){
-                $.each( vendors, function(i, row) {
-                    order_detail[row] ={};
-                    $('#select-choice-mini').append( new Option(row,row) )
-                });
-                //$.mobile.loading( 'hide',function(){});
             }
 
-            $('#btn-confirm').click(function(){
+            document.addEventListener("resume", function() {
+                alert("resume");
+                var stored_order_details = localStorage.getItem("order_details");
+                if(stored_order_details){
+                    order_detail = JSON.parse(stored_order_details);
+                }
+            })
+
+            
+            function loadVendors(){
+                $.each( items, function(key,items) {
+                    order_detail[key] ={};
+                    $('#select-choice-mini').append( new Option(key,key));
+                });                
+            }
+
+            $('#ok-btn').click(function(){
                 var qty = $('#addQtyInput').val();
                 var item_id =$("#id_hidden").val();
                 var item_name = $("#item_name").text();
@@ -72,9 +62,7 @@
                     $("#checkbox_"+item_id+"[type='checkbox']").attr("checked",true);
                     $("#qtyLbl"+item_id).text(qty);                    
                     var items =  new Array();
-                    order_detail[vendor][item_name] = qty;
-                    // alert(order_details[vendor+"_"+item_name])
-                    //order_details[vendor+"_"+item_name] = qty;  
+                    order_detail[vendor][item_name] = qty;                    
                 }else{
                     if(typeof(order_detail[vendor][item_name]) != 'undefined'){
                         console.log("delete item");
@@ -88,31 +76,14 @@
 
             });
             
-            $('#select-choice-mini').click(function(){
-                var vendor = $('#select-choice-mini').val();
-                var isChange = resturant.localeCompare(vendor); 
-                /*if(isChange == 0){
-                    $.mobile.loading( 'show', {
-                        text: 'foo',
-                        textVisible: true,
-                        theme: 'z',
-                        html: ""
-                        });
-                }*/
-            });
+            
 
             $('#select-choice-mini').change(
                 function() {
                 var vendor = $('#select-choice-mini').val();
                 resturant = vendor;
-                cordova.exec (function(menu) { 
-                    addMenu(menu)
-                    
-                }, function(error) {
-                    alert(error);
-                }, "Controller", "LoadMenu",[userName,password,vendor]);
-                /*var menu = ["Roast Chicken Fried Rice","Fish Fried Rice","Vegetable Submarine","Tuna Submarine","Chicken Submarine","Hoppers"];
-                addMenu(menu);*/
+                var menu = items[vendor];
+                addMenu(menu);                
             });
 
             function addMenu(menu){
@@ -127,9 +98,8 @@
                         var html_elements = "";
                         if(typeof(order_detail[vendor][row]) != "undefined"){
                             var qty = order_detail[vendor][row];    
-                            html_elements = '<tr><td width="10% >'
-                                        +'<input name="item_checkbox" onchange="javascript:void(0);" id='+chekBoxID+' type="checkbox" checked="true" class="ccf"/>' 
-                                        +'</td>'
+                            html_elements = '<tr><td width="10%" >'
+                                        +'<input name="item_checkbox" onchange="javascript:void(0);" id='+chekBoxID+' type="checkbox" checked class="ccf"/> </td>'
                                         +'<td style="text-align:left;padding-top:6px;"><label for='+chekBoxID+'><a href="javascript:void(0);" class="aaf" data-item='+row+'>'+row+'</a></label></td>'
                                         +'<td>&nbsp;</td>'
                                         +'<td style="float:right">&nbsp;<label class="qty" id='+qtyLblID+'>'+qty+'</label>'
@@ -167,8 +137,9 @@
                     $("#item_name").text(text);
                     $("#id_hidden").empty();
                     $("#id_hidden").val(itemID);
-                    $('#popupLogin').popup('open', {
-                         transition: 'pop'
+                    $.mobile.changePage('#addQuantity', {
+                        transition : 'slide',
+                        role       : 'page'
                     });
                 }else{
                     console.log("unselected");
@@ -192,8 +163,9 @@
                 $("#item_name").text(text);
                 $("#id_hidden").empty();
                 $("#id_hidden").val(itemName);
-                $('#popupLogin').popup('open', {
-                         transition: 'pop'
+                $.mobile.changePage('#addQuantity', {
+                    transition : 'slide',
+                    role       : 'page'
                 });
 
             });
@@ -239,35 +211,6 @@
                     </table>
                 </div>
             </fieldset>
-            <!-- popUp -->
-            
-            <div data-role="popup" id="popupLogin" data-overlay-theme="a" data-theme="a" data-dismissible="false" class="ui-corner-all">
-                <a href="#" data-rel="back" class="ui-btn-left ui-corner-all ui-shadow ui-btn-a ui-icon-delete ui-btn-icon-notext ui-btn-left"></a>
-
-                   
-                                              
-                        <div id="popUpHeader" data-role="header" data-theme="c" >
-                            <h3 >Add Quantity</h3>
-                        </div><!-- /header -->
-
-                         <div data-role="content">
-                        <input type="hidden" id="id_hidden" value="none" />
-                        <table id="addQtyTable" cellspacing="0" class="ui-corner-all table-stroke ui-responsive ui-shadow ">    <tbody>
-                                <tr>
-                                    <td width="70%" class="left"><label id="item_name"  name="item_name"> </label></td>
-                                    <td><input type="text" data-mini="true" data-role="spinbox" name="addQtyInput" id="addQtyInput" data-options='{"type":"vertical"}' value="1" max="100" min="0" /></td>
-                                </tr>
-                            </tbody>
-                        </table>
-                        </div>
-                   
-
-                    <div data-role="footer"  id ="popUpFooter" class="footer">
-                        <div class="center-wrapper">
-                            <a href="#" data-rel="back" data-position-to="window" id="btn-confirm" class="ui-btn ui-btn-c ui-corner-all">OK</a>
-                        </div>
-                    </div>
-            </div> 
             <!--  footer of the page -->
             <div data-role="footer" data-position="fixed" class="footer">
                 <div class="center-wrapper">
@@ -277,6 +220,34 @@
    
         </div><!-- /content -->
     </div><!-- /page -->
+    <!--enter qty -->
+    <div data-role="page" id="addQuantity" >
+        <div data-role="header" data-theme="c" data-position="fixed">
+            <h1 >Add Quantity</h1>
+        </div><!-- /header-->
+        <div role="main" class="ui-content" >
+        <input type="hidden" id="id_hidden" value="none" />
+        
+        <table id="addQtyTable" width="100%" style="vertical-align: middle " cellspacing="0" class="center-wrapper ui-corner-all table-stroke ui-responsive ui-shadow ">    <tbody>
+                                <tr>
+                                    <th class="left"><label id="item_name"  name="item_name"> </label></th>  
+                                </tr>
+                                <tr>                
+                                    <td style="padding:20px;" class="center-wrapper"><input type="text" data-mini="true" data-role="spinbox" name="addQtyInput" id="addQtyInput" data-options='{"type":"horizontal"}' value="1" max="100" min="0" /></td>
+                                </tr>
+                            </tbody>
+                        </table>
+      
+        
+        </div>
+        <div data-role="footer" data-position="fixed" class="footer">
+                <div class="center-wrapper">
+                    <a href="placeOrder.html" data-rel="back" data-transition="slide" data-position-to="window" id="btn-back" class="ui-btn ui-btn-c ui-corner-all mc-top-margin-1-5 ">Back</a>
+                    <a href="placeOrder.html" data-rel="back" data-transition="slide" data-position-to="window" id="ok-btn" class="ui-btn ui-btn-c ui-corner-all">OK</a>
+                </div>
+        </div>
+
+    </div>
     
 </body>
 </html>

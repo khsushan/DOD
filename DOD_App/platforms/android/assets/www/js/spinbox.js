@@ -140,11 +140,11 @@
 			}
 			
 			w.d.up = $( "<div>", {
-				"class": "ui-btn ui-icon-carat-u ui-btn-icon-notext"
+				"class": "ui-btn ui-icon-carat-r ui-btn-icon-notext"
 			}).html( "&nbsp;" );
 			
 			w.d.down = $( "<div>", {
-				"class": "ui-btn ui-icon-carat-d ui-btn-icon-notext"
+				"class": "ui-btn ui-icon-carat-l ui-btn-icon-notext"
 			}).html( "&nbsp;" );
 			
 			if ( o.type !== "vertical" ) {

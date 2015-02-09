@@ -3,6 +3,7 @@
 <head>
     <title>WSO2 DOD</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link href='http://fonts.googleapis.com/css?family=Roboto:400,300,500' rel='stylesheet' type='text/css'>
         <link rel="stylesheet" href="css/jquery.mobile-1.4.5.min.css" />
         <link href="css/jquery.mobile.icons.min.css" rel="stylesheet" />
         <link href="css/jquery.mobile.structure-1.4.5.min.css" rel="stylesheet" />
@@ -22,7 +23,7 @@
             var thirdBatch = (20*60)+(30)
             //alert("Array "+order_details);
             //alert(order_details)
-            var userName = localStorage.getItem("userName");
+            var userName = localStorage.getItem("email");
             var user = userName.split('@')[0];
             window.setInterval(function() {
                var currentdate = new Date();
@@ -113,8 +114,9 @@
                 $("#vendor_hidden").empty();
                 $("#vendor_hidden").val(vendor);
 
-                $('#popupLogin').popup('open', {
-                         transition: 'pop'
+                $.mobile.changePage('#addQuantity', {
+                    transition : 'slide',
+                    role       : 'page'
                 });
 
             });
@@ -220,14 +222,14 @@
         <label for="checkbox-emailCopy" style="font-size:12px;">Send me copy of this order via email</label>
 
         </div>
-        <div data-role="popup" id="popupLogin" data-overlay-theme="a" data-theme="a" data-dismissible="false" class="ui-corner-all">
+        <!--<div data-role="popup" id="popupLogin" data-overlay-theme="a" data-theme="a" data-dismissible="false" class="ui-corner-all">
                 <a href="#" data-rel="back" class="ui-btn-left ui-corner-all ui-shadow ui-btn-a ui-icon-delete ui-btn-icon-notext ui-btn-left"></a>
 
                     <div role="main" class="ui-content ui-corner-all"  >
                                               
                         <div id="popUpHeader" data-role="header" data-theme="c" >
                             <h1 >Add Quantity</h1>
-                        </div><!-- /header -->
+                        </div><!-- /header 
 
                         <div class="center-wrapper">
                             <h3>Add Quantity</h3>
@@ -248,7 +250,7 @@
                             <a href="#" data-rel="back" data-position-to="window" id="btn-ok" class="ui-btn ui-btn-c ui-corner-all">OK</a>
                         </div>
                     </div>
-        </div> 
+        </div> -->
         <div data-role="popup" id="sure" data-title="Are you sure?" data-overlay-theme="a" data-theme="a" data-dismissible="false" class="ui-corner-all">
         
         <a href="#" data-rel="back" class="ui-btn-left ui-corner-all ui-shadow ui-btn-a ui-icon-delete ui-btn-icon-notext ui-btn-left"></a>
@@ -271,6 +273,34 @@
                     <a href="#" data-position-to="window" rel="external" id="btn-confirm" class="ui-btn ui-btn-c ui-corner-all mc-top-margin-1-5 ">Confirm Order</a>
                 </div>
         </div>
+    </div>
+    <!-- add qty dive -->
+    <div data-role="page" id="addQuantity" >
+        <div data-role="header" data-theme="c" data-position="fixed">
+            <h1 >Add Quantity</h1>
+        </div><!-- /header-->
+        <div role="main" class="ui-content" >
+        <input type="hidden" id="id_hidden" value="none" />
+        <input type="hidden" id="vendor_hidden" value="none" />
+        <table id="addQtyTable" width="100%" style="vertical-align: middle " cellspacing="0" class="center-wrapper ui-corner-all table-stroke ui-responsive ui-shadow ">    <tbody>
+                                <tr>
+                                    <th class="left"><label id="item_name"  name="item_name"> </label></th>  
+                                </tr>
+                                <tr>                
+                                    <td style="padding:20px;" class="center-wrapper"><input type="text" data-mini="true" data-role="spinbox" name="addQtyInput" id="addQtyInput" data-options='{"type":"horizontal"}' value="1" max="100" min="0" /></td>
+                                </tr>
+                            </tbody>
+                        </table>
+      
+        
+        </div>
+        <div data-role="footer" data-position="fixed" class="footer">
+                <div class="center-wrapper">
+                    <a href="placeOrder.html" data-rel="back" data-transition="slide" data-position-to="window" id="btn-back" class="ui-btn ui-btn-c ui-corner-all mc-top-margin-1-5 ">Back</a>
+                    <a href="placeOrder.html" data-rel="back" data-transition="slide" data-position-to="window" id="btn-ok" class="ui-btn ui-btn-c ui-corner-all">OK</a>
+                </div>
+        </div>
+
     </div>
 
 </body>

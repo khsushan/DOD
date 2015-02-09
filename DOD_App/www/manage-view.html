@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>WSO2 DOD - Sign In</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href='http://fonts.googleapis.com/css?family=Roboto:400,300,500' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" href="css/jquery.mobile-1.4.5.min.css"/>
+    <link href="css/themes/dod.css" rel="stylesheet"/>
+    <link href="css/jquery.mobile.icons.min.css" rel="stylesheet"/>
+    <link href="css/jquery.mobile.structure-1.4.5.min.css" rel="stylesheet"/>
+    <link href="css/app.css" rel="stylesheet"/>
+    <script src="js/jquery.min.js"></script>
+    <script src="js/jquery.mobile-1.4.5.min.js"></script>
+    <script type="text/javascript" src="js/jquery.blockUI.js"></script>-
+    <script type="text/javascript" charset="utf-8" src="cordova.js"></script>-
+    <script type="text/javascript" charset="utf-8">
+       $(document).on('deviceready',function() 
+        {
+            var email = localStorage.getItem("email");
+            alert(email);
+            $("#btn-login-google").click(function(){
+                cordova.exec (function(vendors) {          
+                   alert(JSON.stringify(vendors))
+                }, function(error) {
+                    //$.mobile.loading( 'hide',function(){});
+                    alert("error : "+error);
+                }, "Controller", "getDetails",[email]);
+                
+            });
+            var viewLoader  = function(){
+                $.blockUI({ css: { 
+                        border: 'none', 
+                        padding: '15px', 
+                        backgroundColor: '#000', 
+                        '-webkit-border-radius': '10px', 
+                        '-moz-border-radius': '10px', 
+                        opacity: .5, 
+                        color: '#fff' 
+                    } 
+                });
+            }
+            $("#btn-submit").click(function(){
+                localStorage.setItem("items",JSON.stringify(order_detail));
+                //localStorage.removeItem("order_details");
+                $(location).attr('href','placeOrder.html');
+            });
+
+            
+
+        });         
+    </script>
+</head>
+<body id="signPageBody">
+    <div data-role="page" id="signIn">
+        <div id="imgContainer">
+            <img src="img/logo.png"/>
+        </div>
+        <div role="main" class="ui-content">           
+            <div id="logInForm" class="center-wrapper">
+                <a href="#" rel="external" id="btn-submit" class="ui-btn ui-btn-c ui-corner-all mc-top-margin-1-5">Place Order</a>
+                <a href="#" rel="external" id="btn-login-google" class="ui-btn ui-btn-c ui-corner-all mc-top-margin-1-5">View Order</a>
+            </div>
+        </div><!-- /content -->
+    </div><!-- /page -->
+</body>
+</html>

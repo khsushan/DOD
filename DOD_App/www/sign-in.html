@@ -3,6 +3,7 @@
 <head>
     <title>WSO2 DOD - Sign In</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href='http://fonts.googleapis.com/css?family=Roboto:400,300,500' rel='stylesheet' type='text/css'>
     <link rel="stylesheet" href="css/jquery.mobile-1.4.5.min.css"/>
     <link href="css/themes/dod.css" rel="stylesheet"/>
     <link href="css/jquery.mobile.icons.min.css" rel="stylesheet"/>
@@ -10,164 +11,111 @@
     <link href="css/app.css" rel="stylesheet"/>
     <script src="js/jquery.min.js"></script>
     <script src="js/jquery.mobile-1.4.5.min.js"></script>
-    <!--<script type="text/javascript" src="js/googlesignin.js"></script>-->
-    <script type="text/javascript" charset="utf-8" src="cordova.js"></script>
+    <script type="text/javascript" src="js/googlesignin.js"></script>
+    <script type="text/javascript" src="js/jquery.blockUI.js"></script>-
+    <script type="text/javascript" charset="utf-8" src="cordova.js"></script>-
     <script type="text/javascript" charset="utf-8">
-        var googleapi = {
-            authorize: function(options) {
-                var deferred = $.Deferred();
-                //Build the OAuth consent page URL
-                var authUrl = 'https://accounts.google.com/o/oauth2/auth?' + $.param({
-                    client_id: options.client_id,
-                    redirect_uri: options.redirect_uri,
-                    response_type: 'code',
-                    scope: options.scope
-                });
-                //Open the OAuth consent page in the InAppBrowser
-                var authWindow = window.open(authUrl, '_blank', 'location=no,toolbar=no');
-                //The recommendation is to use the redirect_uri "urn:ietf:wg:oauth:2.0:oob"
-                //which sets the authorization code in the browser's title. However, we can't
-                //access the title of the InAppBrowser.
-                //
-                //Instead, we pass a bogus redirect_uri of "http://localhost", which means the
-                //authorization code will get set in the url. We can access the url in the
-                //loadstart and loadstop events. So if we bind the loadstart event, we can
-                //find the authorization code and close the InAppBrowser after the user
-                //has granted us access to their data.  
-                $(authWindow).on('loadstart', function(e) {
-                    var url = e.originalEvent.url;
-                    console.log("My url is :"+url);
-                    var code = /\?code=(.+)$/.exec(url);
-                    var error = /\?error=(.+)$/.exec(url);
-                    console.log("My url is :"+code +" error "+error);
-                    if (code || error) {
-                    //Always close the browser when match is found
-                    authWindow.close();
-                    }
-                    if (code) {
-                        var codeNew=code[1];
-                        var n = codeNew.indexOf('&');
-                        codeNew = codeNew.substring(0, n != -1 ? n : codeNew.length);
-                    //Exchange the authorization code for an access token
-                        $.post('https://accounts.google.com/o/oauth2/token', {
-                        code: code,
-                        client_id: options.client_id,
-                        client_secret: options.client_secret,
-                        redirect_uri: options.redirect_uri,
-                        grant_type: 'authorization_code'
-                        }).done(function(data) {
-                            deferred.resolve(data);
-                        }).fail(function(response) {
-                            deferred.reject(response.responseJSON);
-                        });
-                    } else if (error) {
-                        //The user denied access to the app
-                        deferred.reject({
-                            error: error[1]
-                        });
-                    }
-                });
-                return deferred.promise();
-            }
-        };
-    	$(document).on('deviceready',function() 
+       $(document).on('deviceready',function() 
     	{
-
-            var clientId = "626623813012-4ph22o7ao4pe53tfm9i0bnqd5c22n5tb.apps.googleusercontent.com";
-            var clientSecret = "uoVSLzfW6QZE6fcPNpVeU_-K";
-     
-            // Create login object and initialize it with your app client id and secret
-            //gl = new GoogleLogin(clientId, clientSecret);
-     
-            // Check if already logged in (i.e. access and refresh tokens in localStorage)
-            
-
-    		$('#btn-submit').click(function() {
-    			var userName = $('#txt-email').val();
-    			var password = $('#txt-password').val();
-    			//alert('UserName'+userName);
-    			var email_provider = userName.split('@')[1];
-    			var isEmail_provider = email_provider.localeCompare("wso2.com");
-    			if(isEmail_provider == 0){
-    				cordova.exec (function(winParam) {
-                    var n = winParam.localeCompare("true"); 
-    				if(n == 0){
-    					localStorage.setItem("userName",userName);
-    					localStorage.setItem("password",password);
-    					$(location).attr('href','placeOrder.html');
-    				}else{
-    					alert("Please provide your correct authentication details"+n);
-    				}
-    				}, function(error) {
-    					alert(error);
-					}, "Controller", "Login",[userName,password]);
-				}else{
-					alert("Please enter your WSO2 userName and password");
-				}   			
-
-			});
+            var order_detail ={};
+            var d1 = new $.Deferred();
+            var d2 = new $.Deferred();
+            var d4 = new $.Deferred();
+            userDetailChek();
+             
+            $(document).ajaxStop(function(){
+                userDetailChek();
+            }); 
 
             $("#btn-login-google").click(function(){
-                 //gl.isLoggedIn(endLoginCheck);
-                 alert("login with google");
-                 //callGoogle();
-                googleapi.authorize({
-                    client_id: '626623813012-4ph22o7ao4pe53tfm9i0bnqd5c22n5tb.apps.googleusercontent.com',
-                    client_secret: 'I7HVo5Jp2r_zoX9u-1etbeKb',
-                    redirect_uri: 'http://localhost',
-                    scope: 'https://www.googleapis.com/auth/analytics.readonly'
-                }).done(function(data) {
-                    alert('Access Token: ' + data.access_token);        
-                }).fail(function(data) {
-                    alert(data.error);
-                });
-                 
+                 callGoogle();
             });
 
-            /*function startLogin(e){
-                 gl.startSignin(endLogin);
-            }*/
+            var viewLoader  = function(){
+                $.blockUI({ css: { 
+                        border: 'none', 
+                        padding: '15px', 
+                        backgroundColor: '#000', 
+                        '-webkit-border-radius': '10px', 
+                        '-moz-border-radius': '10px', 
+                        opacity: .5, 
+                        color: '#fff' 
+                    } 
+                });
+            }
 
-            // Callback that fires when login process ends
-            /*function endLogin(result){
-                if(result === -1){
-                    // Login was not successful :(
-                     alert('Login error');
-                }else{
-                    // If successful login, use access_token to get profile name
-                    me(result);
-                }
-            }*/
+            $("#btn-submit").click(function(){
+                loadVendors();
+                viewLoader();
+                $.when(d1,d2).done(function (){
+                    $.unblockUI;
+                    localStorage.setItem("items",JSON.stringify(order_detail));
+                    localStorage.removeItem("order_details");
+                    $(location).attr('href','placeOrder.html');
 
-            function me(accessToken){
-                if(accessToken!==null && typeof(accessToken)!=='undefined'){
-                    var urlAPI = "https://www.googleapis.com/oauth2/v1/userinfo?access_token=" + accessToken;    
-                    var xmlreq = new XMLHttpRequest();
-                    xmlreq.onreadystatechange=function(){
-                        if (xmlreq.readyState==4 && xmlreq.status==200){
-                            var response = eval('(' + xmlreq.responseText + ')');
-                            if(response.name){                  
-                                // Update profile name
-                                alert(response.name + " : "+ response.id);            
-                                // Update anchor behavior to logout
-                                /*var loginButton = document.getElementById("login-button");
-                                loginButton.style.display = 'none';
-                                var logoutButton = document.getElementById("logout-button");
-                                logoutButton.style.display = 'inline';*/
-                            }
+                });               
+                
+            });
+            /*$(this).queue(function() {
+        $("#login_menu").slideUp();
+        $(this).dequeue();
+    }).queue(function() {
+        $('.login_menu_arrow.top').hide();
+        $(this).dequeue();
+    }).queue(function() {
+        $('.login_menu_arrow.bottom').show();
+        $(this).dequeue();
+    });*/   var clickCallbacks = $.Callbacks();
+            var loadVendors = function(){
+                cordova.exec (function(vendors) {            
+                   storeVendors(vendors);
+                   d1.resolve();
+                }, function(error) {
+                    //$.mobile.loading( 'hide',function(){});
+                    alert("error : "+error);
+                }, "Controller", "LoadVendors",[userName,"password"]);
+                return d1.promise();                
+                //d2.resolve();
+            }
+
+            var storeVendors = function(vendors){
+                var vendorName = "";
+                var j = 1;
+                //clickCallbacks.add(loadItems);
+                $.each( vendors, function(i, row) {
+                    console.log("vendors"+row)
+                    order_detail[row] ={};        
+                    loadItems(row).done(function(menu){
+                        order_detail[row] = menu;
+                        //alert(Object.keys(vendors).length+" length")
+                        //alert(JSON.stringify(order_detail));
+                        if(Object.keys(vendors).length == j){
+                          d2.resolve();
+                        }else{
+                          j++;    
                         }
-                    };
-                    xmlreq.open("GET",urlAPI,true);
-                    xmlreq.send();
-                }
+                    });
+                    //clickCallbacks.fire(row);
+                    //setTimeout( loadItems(row),3000 ); 
+                    
+                });
+                //alert("function done");
+                return d2.promise();
+            }
+                
+            var loadItems = function (vendor){   
+                var d3 = new $.Deferred();                
+                cordova.exec (function(menu) { 
+                    //order_detail[vendor] = menu;  
+                    //alert(vendor+" : "+menu);
+                    d3.resolve(menu);
+                }, function(error) {
+                        alert(error);
+                }, "Controller", "LoadMenu",[userName,"",vendor]);
+                return d3.promise();
             }
 
-
-            function loadMenu(){
-
-            }
-    	});
-
+        });         
     </script>
 </head>
 <body id="signPageBody">
@@ -179,25 +127,18 @@
            
            <div id="logInForm" class="center-wrapper">
             <input type="text" name="txt-email" id="txt-email" value="" placeholder="Email" maxlength="20">
-            <input type="password" name="txt-password" id="txt-password" value="" placeholder="Password">
+            <!--<input type="password" name="txt-password" id="txt-password" value="" placeholder="Password">-->
             
             <!--  direction to place Order page -->
-            <a href="#" rel="external" id="btn-submit" class="ui-btn ui-btn-c ui-corner-all mc-top-margin-1-5">Sign In</a>
+            <a href="#" rel="external" id="btn-submit" class="ui-btn ui-btn-c ui-corner-all mc-top-margin-1-5">Proceed With Current Login</a>
             <a href="#" rel="external" id="btn-login-google" class="ui-btn ui-btn-c ui-corner-all mc-top-margin-1-5">Sign In With GOOGLE</a>
             </div>
-
-            
-            
-
             <!--  label for incorrect credentials -->
             <!-- </br>
             <div class="center-wrapper">
                 <label class="text-danger" for="errorMsg">Please enter correct credentials</label>
             </div> -->
-            
-
         </div><!-- /content -->
     </div><!-- /page -->
 </body>
-
 </html>

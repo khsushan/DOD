@@ -19,56 +19,22 @@
 
 package com.wso2.dod;
 
-import java.io.IOException;
-
 import android.os.Bundle;
 import android.os.StrictMode;
 
 import org.apache.cordova.*;
 
-import com.google.gdata.util.AuthenticationException;
-import com.google.gdata.util.ServiceException;
-import com.wso2.spreadsheet.SpreadSheetHandler;
-
 public class CordovaApp extends CordovaActivity {
-	private SpreadSheetHandler spreadSheetHandler;
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		super.init();
-		/*
-		 * Thread t = new Thread(new Runnable() {
-		 * 
-		 * @Override public void run() { try { spreadSheetHandler = new
-		 * SpreadSheetHandler("sachithu@wso2.com", "19920129Sayuriushan!");
-		 * /*try { spreadSheetHandler.getdetails();
-		 * //spreadSheetHandler.addRow(new
-		 * String[]{"noyely@wso2.com","Sandwich","14","0981818188"}); } catch
-		 * (IOException e) { e.printStackTrace(); }
-		 * spreadSheetHandler.getdetails();
-		 * 
-		 * //spreadSheetHandler.getdetails(); } catch (AuthenticationException
-		 * e) { e.printStackTrace(); }catch (ServiceException e) {
-		 * e.printStackTrace(); } } }); t.start();
-		 */
 		StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder()
 				.permitAll().build();
 		StrictMode.setThreadPolicy(policy);
-		/*try {
-			spreadSheetHandler =  new SpreadSheetHandler("sachithu@wso2.com","19920129Sayuriushan!");
-			spreadSheetHandler.getResturantNames();
-		} catch (AuthenticationException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (ServiceException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}*/
-		
-		loadUrl(launchUrl);
+		//super.loadUrl("file:///android_asset/www/manage-view.html");
+		super.loadUrl("file:///android_asset/www/sign-in.html");
+		//super.loadUrl("file:///android_asset/www/placeOrder.html");
 	}
 
 }

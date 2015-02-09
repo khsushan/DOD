@@ -15,6 +15,6 @@
     <access origin="*" />
     <plugin name="InAppBrowser" value="org.apache.cordova.InAppBrowser" />
     <feature name="Controller">
-	<param name="android-package" value="com.wso2.dod.Controller"/>
+        <param name="android-package" value="com.wso2.dod.Controller"/>
     </feature>
 </widget>

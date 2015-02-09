@@ -13,17 +13,19 @@
     <script src="js/jquery.mobile-1.4.5.min.js"></script>
     <script src="js/jquery.url.js"></script>
     <script src="js/spinbox.js"></script>
+    <script type="text/javascript" src="js/jquery.blockUI.js"></script>-
     <script type="text/javascript" charset="utf-8" src="cordova.js"></script>
     <script type="text/javascript">
         $(document).ready(function(){
             var order_details = localStorage.getItem("order_details");
+            var teams =JSON.parse(localStorage.getItem("teams"));
             var obj = JSON.parse(order_details);
             var firstBatch = (18*60)+(30);
             var secondBatch = (19*60)+(30)
             var thirdBatch = (20*60)+(30)
             //alert("Array "+order_details);
             //alert(order_details)
-            var userName = localStorage.getItem("userName");
+            var userName = localStorage.getItem("email");
             var user = userName.split('@')[0];
             window.setInterval(function() {
                var currentdate = new Date();
@@ -45,6 +47,27 @@
                 }
                $("#orderBatchdisplay").text(user+' , Your Order will be placed with the batch '+batch+' of Orders');    
             }, 1000);
+
+            var viewLoader  = function(){
+                $.blockUI({ css: { 
+                        border: 'none', 
+                        padding: '15px', 
+                        backgroundColor: '#000', 
+                        '-webkit-border-radius': '10px', 
+                        '-moz-border-radius': '10px', 
+                        opacity: .5, 
+                        color: '#fff' 
+                    } 
+                });
+            }
+
+            loadTeams();
+            function loadTeams(){
+                $.each(teams, function(i,team) {
+                    $('#select-choice-team').append( new Option(team,team));
+                });                 
+            }
+
 
             viewOrderItem();
             function viewOrderItem(){
@@ -72,9 +95,7 @@
                 var link  = $(this).find('td a');
                 var index = link.data("index");
                 var vendor = $("#orderTable > tbody > tr > td[index="+index+"]").text()
-                var row = $(this); 
-                //alert("Confirm" + JSON.stringify(obj));
-                //alert( 'You removed '+link.text()+" from "+vendor);
+                var row = $(this);                 
                 customConfirm("Delete Order Item", "Do you need to delete "+link.text()+" from "+vendor+" resuturant", "Yes", function() {
                     delete obj[vendor][link.text()];                  
                     row.remove();
@@ -126,7 +147,7 @@
                 var qty = $('#addQtyInput').val();
                 var item_id =$("#id_hidden").val();
                 var vendor =$("#vendor_hidden").val();
-                alert(vendor);
+                //alert(vendor);
                 var item_name = $("#item_name").text();
                 console.log("Item Name "+item_name);
                 console.log("Qty "+qty);
@@ -134,31 +155,32 @@
                 if(parseInt(qty) > 0){
                     $("#qtyLbl"+item_id).text(qty);                    
                     //change qty
-                    obj[vendor][item_name] = qty;
-                    // alert(order_details[vendor+"_"+item_name])
-                    //order_details[vendor+"_"+item_name] = qty;  
+                    obj[vendor][item_name] = qty;                    
                 }else{
                     if(typeof(obj[vendor][item_name]) != 'undefined'){
                         console.log("delete item");
                         delete obj[vendor][item_name];
                     }
-                }
-                //alert("Confirm" + JSON.stringify(obj));
+                }                
             });
             
             $("#btn-confirm").click(function(){
+                viewLoader();
                 var team = $("#select-choice-team").val();
                 var office = $("#select-choice-office").val();
-                alert("Team "+team+" Office "+office);
+                //alert("Team "+team+" Office "+office);
                 var password = localStorage.getItem("password");
                 var userDetail ={};
                 userDetail["username"] =userName;
                 userDetail["password"] = password;
                 userDetail["team"] =team;
-                userDetail["office"] = office;
+                userDetail["office"] = office;                
                 cordova.exec (function(vendors) {            
-                        alert(vendors);
+                        //alert(vendors);
+                        $.unblockUI;
+                        $(location).attr('href','manage-view.html');
                  }, function(error) {
+                        $.unblockUI;
                         alert(error);
                  }, "Controller", "PlaceOrder",[userDetail,obj]);
             });
@@ -201,15 +223,15 @@
 
                 <select name="select-choice-team" id="select-choice-team" data-mini="true" data-inline="true">
                     <option value="None">None</option>
-                    <option value="APIM">APIM</option>
+                    <!--<option value="APIM">APIM</option>
                     <option value="APPM">APPM</option>
                     <option value="UX">UX</option>
-                    <option value="BAM">BAM</option>
+                    <option value="BAM">BAM</option>-->
                 </select>
         </div>
 
         <div data-role="fieldcontain">
-            <label style="float:left; margin-right:20px; margin-top:4px;"for="select-team" class="select">Office</label>
+            <label style="float:left; margin-right:20px; margin-top:4px;"for="select-team" class="select">Loacation</label>
 
                 <select name="select-choice-office" id="select-choice-office" data-mini="true" data-inline="true">
                     <option value="None">None</option>
@@ -222,35 +244,7 @@
         <label for="checkbox-emailCopy" style="font-size:12px;">Send me copy of this order via email</label>
 
         </div>
-        <!--<div data-role="popup" id="popupLogin" data-overlay-theme="a" data-theme="a" data-dismissible="false" class="ui-corner-all">
-                <a href="#" data-rel="back" class="ui-btn-left ui-corner-all ui-shadow ui-btn-a ui-icon-delete ui-btn-icon-notext ui-btn-left"></a>
-
-                    <div role="main" class="ui-content ui-corner-all"  >
-                                              
-                        <div id="popUpHeader" data-role="header" data-theme="c" >
-                            <h1 >Add Quantity</h1>
-                        </div><!-- /header 
-
-                        <div class="center-wrapper">
-                            <h3>Add Quantity</h3>
-                        </div>
-                        <input type="hidden" id="id_hidden" value="none" />
-                        <input type="hidden" id="vendor_hidden" value="none" />
-                        <table id="addQtyTable" cellspacing="0" class="ui-corner-all table-stroke ui-responsive ui-shadow ">    <tbody>
-                                <tr>
-                                    <td width="70%" class="left"><label id="item_name"  name="item_name"> </label></td>
-                                    <td><input type="text" data-mini="true" data-role="spinbox" name="addQtyInput" id="addQtyInput" data-options='{"type":"vertical"}' value="1" max="100" min="0" /></td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-
-                    <div data-role="footer"  id ="popUpFooter" class="footer">
-                        <div class="center-wrapper">
-                            <a href="#" data-rel="back" data-position-to="window" id="btn-ok" class="ui-btn ui-btn-c ui-corner-all">OK</a>
-                        </div>
-                    </div>
-        </div> -->
+        
         <div data-role="popup" id="sure" data-title="Are you sure?" data-overlay-theme="a" data-theme="a" data-dismissible="false" class="ui-corner-all">
         
         <a href="#" data-rel="back" class="ui-btn-left ui-corner-all ui-shadow ui-btn-a ui-icon-delete ui-btn-icon-notext ui-btn-left"></a>
@@ -305,4 +299,3 @@
 
 </body>
 </html>
-

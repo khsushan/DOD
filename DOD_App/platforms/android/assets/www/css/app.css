@@ -75,7 +75,7 @@ h3.mc-text-danger  {
 
 
 
-#btn-place-order,#directiontoSignIn{
+#btn-place-order,#directiontoSignIn,#ok-btn,#btn-confirm{
 	background-color: #333333;
 	width: 100px;
 	margin-top: 6px;
