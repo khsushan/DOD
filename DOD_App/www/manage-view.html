@@ -14,40 +14,54 @@
     <script type="text/javascript" src="js/jquery.blockUI.js"></script>-
     <script type="text/javascript" charset="utf-8" src="cordova.js"></script>-
     <script type="text/javascript" charset="utf-8">
-       $(document).on('deviceready',function() 
-        {
+        $(document).on('deviceready', function() {
             var email = localStorage.getItem("email");
-            alert(email);
-            $("#btn-login-google").click(function(){
-                cordova.exec (function(vendors) {          
-                   alert(JSON.stringify(vendors))
+            var d1 = new $.Deferred();
+            $("#btn-login-google").click(function() {
+                viewLoader();
+                cordova.exec(function(placedOrder) {
+                    localStorage.setItem("placedOrder", JSON.stringify(placedOrder));
+                    $.unblockUI;
+                    $(location).attr('href', 'viewOrder.html');
                 }, function(error) {
-                    //$.mobile.loading( 'hide',function(){});
-                    alert("error : "+error);
-                }, "Controller", "getDetails",[email]);
-                
-            });
-            var viewLoader  = function(){
-                $.blockUI({ css: { 
-                        border: 'none', 
-                        padding: '15px', 
-                        backgroundColor: '#000', 
-                        '-webkit-border-radius': '10px', 
-                        '-moz-border-radius': '10px', 
-                        opacity: .5, 
-                        color: '#fff' 
-                    } 
+                    alert("error : " + error);
+                }, "Controller", "getDetails", [email]);
+
+            });          
+
+            var viewLoader = function() {
+                $.blockUI({
+                    css: {
+                        border: 'none',
+                        padding: '15px',
+                        backgroundColor: '#000',
+                        '-webkit-border-radius': '10px',
+                        '-moz-border-radius': '10px',
+                        opacity: .5,
+                        color: '#fff'
+                    }
                 });
             }
-            $("#btn-submit").click(function(){
-                localStorage.setItem("items",JSON.stringify(order_detail));
-                //localStorage.removeItem("order_details");
-                $(location).attr('href','placeOrder.html');
+            function clickedBack(){
+               
+            }
+            var loadTeams = function(){
+                cordova.exec (function(teams) { 
+                    localStorage.setItem("teams",JSON.stringify(teams));
+                    d1.resolve();
+                }, function(error) {
+                    alert(error);
+                }, "Controller", "loadTeams",[]);
+                return d1.promise();     
+            }
+            $("#btn-submit").click(function() {
+                loadTeams();
+                 $.when(d1).done(function(){
+                    localStorage.removeItem("order_details");
+                    $(location).attr('href', 'placeOrder.html');
+                 });                
             });
-
-            
-
-        });         
+        });
     </script>
 </head>
 <body id="signPageBody">

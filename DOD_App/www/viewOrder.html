@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>WSO2 DOD</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link href='http://fonts.googleapis.com/css?family=Roboto:400,300,500' rel='stylesheet' type='text/css'>
+        <link rel="stylesheet" href="css/jquery.mobile-1.4.5.min.css" />
+        <link href="css/jquery.mobile.icons.min.css" rel="stylesheet" />
+        <link href="css/jquery.mobile.structure-1.4.5.min.css" rel="stylesheet" />
+        <link href="css/themes/dod.css" rel="stylesheet" />
+        <link href="css/app.css" rel="stylesheet" />
+    <script src="js/jquery.min.js"></script>
+    <script src="js/jquery.mobile-1.4.5.min.js"></script>
+    <script src="js/jquery.url.js"></script>
+    <script src="js/spinbox.js"></script>
+    <script type="text/javascript" charset="utf-8" src="cordova.js"></script>
+    <script type="text/javascript">
+        $(document).ready(function(){
+            var orderTable =  localStorage.getItem("placedOrder");
+            var obj = JSON.parse(orderTable);
+            viewOrderItem();
+
+            document.addEventListener("backbutton", clickedBack, false);
+
+            function clickedBack(){               
+                $(location).attr('href', 'manage-view.html');   
+            }
+
+            function viewOrderItem(){
+                var i =0;
+                $('#orderTableContainer').empty();
+                $.each(obj,function(key,value){
+                    $.each(value,function(vendor,items){
+                        var time;
+                        var status;
+                        var itemDetailTable = '<table cellspacing="0" id="orderTable" class="table-stroke ui-responsive ui-shadow "><thead><tr><th class="left" style="width:70%">Item</th><th class="center" style="width:30%">Qty</th></tr></thead>';               
+
+                        $.each(items,function(timeStamp,itemDetails){
+                            time = itemDetails[2];
+                            status = itemDetails[3];
+                            itemDetailTable += '<tr class="ttf"><td class="left">'
+                                +'<lable>'+itemDetails[0]+'</label></td>'
+                                +'<td class="center"><label>'+itemDetails[1]+'</label></td></tr>';
+
+                        });
+                        itemDetailTable += '</tbody></table>';
+
+                        var table ='<table cellspacing="0" id="orderTable" class="table-stroke ui-responsive ui-shadow "><tr><td class="center vendorName" colspan="2"><b>'+vendor+'</b></td></tr>'
+                                   +'<tr><td class="left"><label>Time : '+time+'</lable></td><td class="center"><label>Status : '+status+'</lable></td></tr></table>';
+                         $('#orderTableContainer').append(table);
+                         $('#orderTableContainer').append(itemDetailTable);
+                         $('#orderTableContainer').append("</br>");
+                     });
+                });
+            }
+        });           
+    </script>
+</head>
+
+<body>
+
+    <div data-role="page" id="confirmOrder">
+        <div data-role="header" data-theme="c" data-position="fixed">
+
+            <h1 >WSO2 Dinner On Demand</h1>
+        </div><!-- /header -->
+        <div role="main" class="ui-content">
+            <div id="orderTableContainer" class="center-wrapper">
+                
+            </div>
+            </br>
+        </div>    
+    </div>    
+
+</body>
+</html>
+

@@ -35,7 +35,7 @@
             document.addEventListener("backbutton", clickedBack, false);
 
             function clickedBack(){
-                $(location).attr('href', 'manage-view.html');   
+                $(location).attr('href', 'manage-view.html');
             }
             
             document.addEventListener("resume", function() {
@@ -60,10 +60,12 @@
                 console.log("Qty "+qty);
                 console.log("item_id "+item_id);
                 var vendor = $('#select-choice-mini').val();
+                $('#addQtyInput').attr("value",0);
                 //alert(vendor+"_"+item_name);
                 if(parseInt(qty) > 0){
                     $("#checkbox_"+item_id+"[type='checkbox']").attr("checked",true);
-                    $("#qtyLbl"+item_id).text(qty);                    
+                    $("#qtyLbl"+item_id).text(qty);
+                    $("#qtyLbl"+item_id).data("val",qty);                    
                     var items =  new Array();
                     order_detail[vendor][item_name] = qty;                    
                 }else{
@@ -102,7 +104,7 @@
                                         +'<input name="item_checkbox" onchange="javascript:void(0);" id='+chekBoxID+' type="checkbox" checked class="ccf"/> </td>'
                                         +'<td style="text-align:left;padding-top:6px;"><label for='+chekBoxID+'><a href="javascript:void(0);" class="aaf" data-item='+row+'>'+row+'</a></label></td>'
                                         +'<td>&nbsp;</td>'
-                                        +'<td style="float:right">&nbsp;<label class="qty" id='+qtyLblID+' data-val='+qty+'>'+qty+'</label>'
+                                        +'<td style="float:right">&nbsp;<label class="qty" id='+qtyLblID+' data-val='+qty+' >'+qty+'</label>'
                                         +'</td></tr>'    
                         }else{
                             html_elements = '<tr><td width="10%" >'
@@ -130,13 +132,12 @@
                 if(!$(this).attr("checked")){
                     console.log("Id is :"+id)
                     var qty = $("#qtyLbl"+itemID).data("val");
-                    //$('#addQtyInput').text(qty);
-                    $('#addQtyInput').attr("value",qty);
                     console.log("Link name is "+text);
                     $("#item_name").empty();
                     $("#item_name").text(text);
                     $("#id_hidden").empty();
                     $("#id_hidden").val(itemID);
+                    $('#addQtyInput').prop("value",qty);
                     $.mobile.changePage('#addQuantity', {
                         transition : 'slide',
                         role       : 'page'
@@ -156,13 +157,18 @@
                 var itemName =  $(this).data("item");
                 var text =  $(this).text();
                 var qty = $("#qtyLbl"+itemName).data("val");
-                $('#addQtyInput').attr("value",qty);
+                alert(qty);
                 console.log(itemName);
                 console.log("link text : "+text);
+                var element =  $('#addQtyInput');
+                $(element[0].attributes).each(function() {
+                    console.log(this.nodeName+':'+this.nodeValue);
+                });
                 $("#item_name").empty();
                 $("#item_name").text(text);
                 $("#id_hidden").empty();
                 $("#id_hidden").val(itemName);
+                $('#addQtyInput').prop("value",qty);
                 $.mobile.changePage('#addQuantity', {
                     transition : 'slide',
                     role       : 'page'

@@ -164,6 +164,5 @@ var googleapi = {
           $("#txt-email").val(email);                   
         }else{
             $('#btn-submit').hide();
-            alert("you need to sign in first");
         }
   }
